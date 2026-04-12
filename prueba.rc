@@ -1,0 +1,479 @@
+// ════════════════════════════════════════════════════════════
+//  prueba_gramatica.rc
+//  Programa de prueba exhaustivo del lenguaje RISCO.
+//  Cada sección ejercita una regla distinta de la gramática.
+// ════════════════════════════════════════════════════════════
+
+
+// ── 1. LITERALES ─────────────────────────────────────────────
+// Prueba: NUMERO, DECIMAL, STRING, BOOLEANO, NULL, lista
+
+print("=== 1. LITERALES ===")
+
+val entero = 42
+val numero_decimal = 3.14
+val cadena_texto = "hola RISCO"
+val bandera = true
+val nada = null
+val lista_mixta = [1, 2.5, "tres", true]
+
+print(entero)
+print(numero_decimal)
+print(cadena_texto)
+print(bandera)
+print(nada)
+print(lista_mixta)
+
+
+// ── 2. VARIABLES val Y var ────────────────────────────────────
+// Prueba: declaracion_variable, asignacion
+
+print("=== 2. VARIABLES ===")
+
+val constante = 100
+var contador = 0
+contador = contador + 1
+contador = contador + 1
+contador = contador + 1
+print(constante)
+print(contador)
+
+
+// ── 3. ARITMÉTICA Y PRECEDENCIA ──────────────────────────────
+// Prueba: suma, termino, potencia, primario unario, paréntesis
+
+print("=== 3. ARITMETICA ===")
+
+val a = 2 + 3 * 4
+val b = (2 + 3) * 4
+val c = 2 ^ 3 ^ 2
+val d = -10 + 4
+val e = 17 % 5
+val f = 10 / 4
+
+print(a)
+print(b)
+print(c)
+print(d)
+print(e)
+print(f)
+
+
+// ── 4. OPERADORES RELACIONALES Y LÓGICOS ─────────────────────
+// Prueba: relacional, igualdad, and_logico, or_logico, !
+
+print("=== 4. LOGICA ===")
+
+val mayor = 5 > 3
+val menor_igual = 4 <= 4
+val igual = "risco" == "risco"
+val distinto = 1 != 2
+val y_logico = true && mayor
+val o_logico = false || distinto
+val negado = !false
+
+print(mayor)
+print(menor_igual)
+print(igual)
+print(distinto)
+print(y_logico)
+print(o_logico)
+print(negado)
+
+
+// ── 5. OPERADOR in ────────────────────────────────────────────
+// Prueba: comparacion con 'in'
+
+print("=== 5. PERTENENCIA ===")
+
+val colores = ["rojo", "verde", "azul"]
+val hay_rojo = "rojo" in colores
+val hay_negro = "negro" in colores
+val hay_tres = 3 in [1, 2, 3, 4]
+
+print(hay_rojo)
+print(hay_negro)
+print(hay_tres)
+
+
+// ── 6. CONCATENACION DE STRINGS Y LISTAS ─────────────────────
+// Prueba: suma con str+str y list+list
+
+print("=== 6. CONCATENACION ===")
+
+val saludo = "Hola" + ", " + "mundo"
+val combinada = [1, 2] + [3, 4] + [5]
+
+print(saludo)
+print(combinada)
+
+
+// ── 7. INDEXACION ────────────────────────────────────────────
+// Prueba: acceso con lista[i] e índices negativos
+
+print("=== 7. INDEXACION ===")
+
+val frutas = ["manzana", "pera", "uva", "mango"]
+print(frutas[0])
+print(frutas[2])
+print(frutas[3])
+
+val matriz = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+print(matriz[0][0])
+print(matriz[1][1])
+print(matriz[2][2])
+
+
+// ── 8. IF / ELIF / ELSE ───────────────────────────────────────
+// Prueba: if_stmt con todas sus ramas
+
+print("=== 8. CONDICIONALES ===")
+
+var temperatura = 35
+
+if temperatura > 30:
+    print("hace calor")
+elif temperatura > 20:
+    print("temperatura agradable")
+elif temperatura > 10:
+    print("hace frio")
+else:
+    print("hace mucho frio")
+end
+
+// if sin else
+val x = 7
+if x % 2 == 0:
+    print("par")
+end
+
+// if anidado
+if x > 0:
+    if x > 5:
+        print("positivo y mayor que 5")
+    else:
+        print("positivo y menor o igual a 5")
+    end
+end
+
+
+// ── 9. WHILE ─────────────────────────────────────────────────
+// Prueba: while_stmt
+
+print("=== 9. WHILE ===")
+
+var i = 1
+var suma = 0
+while i <= 10:
+    suma = suma + i
+    i = i + 1
+end
+print(suma)
+
+// Contar hacia atrás
+var cuenta = 5
+while cuenta > 0:
+    print(cuenta)
+    cuenta = cuenta - 1
+end
+
+
+// ── 10. FOR ──────────────────────────────────────────────────
+// Prueba: for_stmt sobre lista y sobre string
+
+print("=== 10. FOR ===")
+
+val numeros = [10, 20, 30, 40, 50]
+var acumulado = 0
+for n in numeros:
+    acumulado = acumulado + n
+end
+print(acumulado)
+
+// For sobre string
+val palabra = "RISCO"
+for letra in palabra:
+    print(letra)
+end
+
+// For anidado
+val filas = [1, 2, 3]
+val cols = [1, 2, 3]
+for fila in filas:
+    for col in cols:
+        if fila == col:
+            print(fila)
+        end
+    end
+end
+
+
+// ── 11. FUNCIONES CORTAS ─────────────────────────────────────
+// Prueba: declaracion_funcion de una sola línea
+// ¡IMPORTANTE: Estas funciones deben definerse ANTES de ser usadas!
+
+print("=== 11. FUNCIONES CORTAS ===")
+
+doble(x) => x * 2
+cuadrado(x) => x ^ 2
+sumar(x, y) => x + y
+es_par(n) => n % 2 == 0
+identidad(v) => v
+
+print(doble(7))
+print(cuadrado(5))
+print(sumar(3, 4))
+print(es_par(8))
+print(es_par(9))
+print(identidad("sin cambios"))
+
+
+// ── 12. FUNCIONES FORMA LARGA CON RETURN ─────────────────────
+// Prueba: declaracion_funcion multilínea y return_stmt
+
+print("=== 12. FUNCIONES LARGAS ===")
+
+maximo(a, b) =>
+    if a >= b:
+        return a
+    end
+    return b
+end
+
+factorial(n) =>
+    if n <= 1:
+        return 1
+    end
+    return n * factorial(n - 1)
+end
+
+clasificar(nota) =>
+    if nota >= 90:
+        return "Excelente"
+    elif nota >= 70:
+        return "Aprobado"
+    elif nota >= 50:
+        return "Regular"
+    else:
+        return "Reprobado"
+    end
+end
+
+print(maximo(8, 13))
+print(maximo(20, 7))
+print(factorial(5))
+print(factorial(10))
+print(clasificar(95))
+print(clasificar(72))
+print(clasificar(55))
+print(clasificar(40))
+
+
+// ── 13. BUILT-IN: long ───────────────────────────────────────
+// Prueba: llamada_funcion al built-in long()
+
+print("=== 13. BUILTIN long ===")
+
+val datos = [4, 8, 15, 16, 23, 42]
+print(long(datos))
+print(long([]))
+print(long("hola"))
+
+
+// ── 14. BUILT-IN: range ──────────────────────────────────────
+// Prueba: llamada_funcion al built-in range()
+
+print("=== 14. BUILTIN range ===")
+
+val secuencia = range(0, 5)
+print(secuencia)
+print(long(range(1, 11)))
+
+
+// ── 15. BUILT-IN: map ────────────────────────────────────────
+// Prueba: map con función nombrada y con lambda
+
+print("=== 15. BUILTIN map ===")
+
+val valores = [1, 2, 3, 4, 5]
+val dobles = map(valores, (x) => x * 2)
+val cuadrados = map(valores, (x) => x ^ 2)
+val textos = map(range(1, 4), (n) => texto(n))
+
+print(dobles)
+print(cuadrados)
+print(textos)
+
+// map con función nombrada
+val triples = map(valores, doble)
+print(triples)
+
+
+// ── 16. BUILT-IN: filter ─────────────────────────────────────
+// Prueba: filter con lambda y con función nombrada
+
+print("=== 16. BUILTIN filter ===")
+
+val todos = range(1, 11)
+val pares = filter(todos, (n) => n % 2 == 0)
+val impares = filter(todos, (n) => n % 2 != 0)
+val mayores = filter(datos, (v) => v > 15)
+
+print(pares)
+print(impares)
+print(mayores)
+
+// filter con función nombrada
+val pares2 = filter(range(1, 11), es_par)
+print(pares2)
+
+
+// ── 17. BUILT-IN: reduce ─────────────────────────────────────
+// Prueba: reduce para suma, producto y máximo
+
+print("=== 17. BUILTIN reduce ===")
+
+val lista_r = [1, 2, 3, 4, 5]
+val suma_r = reduce(lista_r, (a, b) => a + b)
+val producto = reduce(lista_r, (a, b) => a * b)
+
+print(suma_r)
+print(producto)
+
+
+// ── 18. COMBINACIÓN map + filter + reduce ────────────────────
+// Prueba: cadena de built-ins (pipeline manual)
+
+print("=== 18. PIPELINE MANUAL ===")
+
+// Suma de cuadrados de los números pares del 1 al 10
+val base = range(1, 11)
+val solo_pares = filter(base, (n) => n % 2 == 0)
+val cuadrados_pares = map(solo_pares, (n) => n ^ 2)
+val suma_cuadrados = reduce(cuadrados_pares, (a, b) => a + b)
+print(suma_cuadrados)
+
+
+// ── 19. CASTEO EXPLÍCITO ─────────────────────────────────────
+// Prueba: casteo con num(), decimal(), texto(), bool()
+
+print("=== 19. CASTEO ===")
+
+val como_entero = num(3.99)
+val como_decimal = decimal(7)
+val como_texto_n = texto(42)
+val como_texto_d = texto(3.14)
+val como_texto_b = texto(true)
+val verdadero = bool(1)
+val falso = bool(0)
+val de_string = num("25")
+
+print(como_entero)
+print(como_decimal)
+print(como_texto_n)
+print(como_texto_d)
+print(como_texto_b)
+print(verdadero)
+print(falso)
+print(de_string)
+
+
+// ── 20. COMENTARIOS ──────────────────────────────────────────
+// Prueba: COMENTARIO_LINEA, COMENTARIO_BLOQUE, COMENTARIO_DOC
+
+/-
+    Este bloque completo es un comentario.
+    El lexer lo ignora por completo.
+    Puede tener múltiples líneas.
+-/
+
+/// Esto es un comentario de documentación — también ignorado
+
+val ignorado = 0 // este comentario no afecta la expresión
+
+print("=== 20. COMENTARIOS === (llegaste hasta aqui, todo funciono)")
+
+
+// ── 21. FUNCIONES COMO VALORES (orden superior) ──────────────
+// Prueba: pasar función nombrada como argumento
+
+print("=== 21. FUNCIONES DE ORDEN SUPERIOR ===")
+
+aplicar(f, valor) => f(valor)
+
+print(aplicar(doble, 5))
+print(aplicar(cuadrado, 4))
+print(aplicar((x) => x + 100, 7))
+
+
+// ── 22. CLOSURES Y SCOPE ─────────────────────────────────────
+// Prueba: función que captura variable del entorno
+
+print("=== 22. CLOSURES ===")
+
+val base_suma = 1000
+
+agregar_base(n) => n + base_suma
+
+print(agregar_base(5))
+print(agregar_base(200))
+
+
+// ── 23. RECURSIÓN ────────────────────────────────────────────
+// Prueba: función recursiva sin guards
+
+print("=== 23. RECURSION ===")
+
+fibonacci(n) =>
+    if n <= 0:
+        return 0
+    end
+    if n == 1:
+        return 1
+    end
+    return fibonacci(n - 1) + fibonacci(n - 2)
+end
+
+print(fibonacci(0))
+print(fibonacci(1))
+print(fibonacci(6))
+print(fibonacci(10))
+
+
+// ── 24. LISTAS ANIDADAS ──────────────────────────────────────
+// Prueba: lista de listas, indexación doble
+
+print("=== 24. LISTAS ANIDADAS ===")
+
+val tabla = [[10, 20, 30], [40, 50, 60], [70, 80, 90]]
+
+print(tabla[0])
+print(tabla[1][2])
+print(tabla[2][0])
+
+// Recorrer con for anidado
+var suma_tabla = 0
+for fila2 in tabla:
+    for celda in fila2:
+        suma_tabla = suma_tabla + celda
+    end
+end
+print(suma_tabla)
+
+
+// ── 25. EXPRESIONES COMPLEJAS ────────────────────────────────
+// Prueba: combinación de todos los niveles de precedencia
+
+print("=== 25. EXPRESIONES COMPLEJAS ===")
+
+val r1 = 2 + 3 * 4 ^ 2 - 1
+val r2 = (10 - 3) * (2 + 1) ^ 2
+val r3 = !false && 3 > 2 || 1 == 0
+val r4 = long([1, 2, 3]) * 2 + num(decimal(4))
+
+print(r1)
+print(r2)
+print(r3)
+print(r4)
+
+print("=== FIN DE PRUEBAS ===")
