@@ -392,3 +392,84 @@ def test_extension_invalida():
     finally:
         os.unlink(nombre)
     assert len(resultado) > 0
+
+
+# input()
+# Se usa unittest.mock.patch para simular lo que el usuario escribe,
+# ya que input() lee de stdin y no podemos escribir de verdad en los tests.
+
+from unittest.mock import patch
+
+def ejecutar_con_input(codigo, entradas):
+    """
+    Igual que ejecutar() pero simula respuestas del usuario.
+    entradas: lista de strings, uno por cada input() que aparezca en el código.
+    """
+    captura = StringIO()
+    sys.stdout = captura
+    with patch('builtins.input', side_effect=entradas):
+        interprete = RISCO(modo_interactivo=True)
+        interprete._ejecutar_codigo(codigo)
+    sys.stdout = sys.__stdout__
+    return [l.strip() for l in captura.getvalue().strip().splitlines() if l.strip()]
+
+
+def test_input_devuelve_texto():
+    # input() siempre devuelve Text aunque el usuario escriba un número
+    codigo = 'val x = input("prompt")\nprint(x)\n'
+    assert ejecutar_con_input(codigo, ["hola"]) == ["hola"]
+
+def test_input_prompt_vacio():
+    # input() sin argumento también funciona
+    codigo = 'val x = input("")\nprint(x)\n'
+    assert ejecutar_con_input(codigo, ["risco"]) == ["risco"]
+
+def test_input_con_casteo_num():
+    # Flujo típico: leer número desde consola con num(input(...))
+    codigo = 'val n = num(input("num: "))\nprint(n + 1)\n'
+    assert ejecutar_con_input(codigo, ["10"]) == ["11"]
+
+def test_input_con_casteo_decimal():
+    # Leer decimal desde consola
+    codigo = 'val d = decimal(input("dec: "))\nprint(d)\n'
+    assert ejecutar_con_input(codigo, ["3.14"]) == ["3.14"]
+
+def test_input_multiples():
+    # Varios input() en el mismo programa, cada uno consume una entrada
+    codigo = (
+        'val a = input("a: ")\n'
+        'val b = input("b: ")\n'
+        'print(a + b)\n'
+    )
+    assert ejecutar_con_input(codigo, ["hola", " risco"]) == ["hola risco"]
+
+def test_input_en_condicional():
+    # La entrada determina qué rama del if se ejecuta
+    codigo = (
+        'val edad = num(input("edad: "))\n'
+        'if edad >= 18:\n'
+        '    print("mayor")\n'
+        'else:\n'
+        '    print("menor")\n'
+        'end\n'
+    )
+    assert ejecutar_con_input(codigo, ["20"]) == ["mayor"]
+    assert ejecutar_con_input(codigo, ["15"]) == ["menor"]
+
+def test_input_en_bucle():
+    # Leer varios valores dentro de un for
+    codigo = (
+        'val n = num(input("n: "))\n'
+        'var i = 0\n'
+        'while i < n:\n'
+        '    print(i)\n'
+        '    i = i + 1\n'
+        'end\n'
+    )
+    assert ejecutar_con_input(codigo, ["3"]) == ["0", "1", "2"]
+
+def test_input_string_invalido_para_num():
+    # num() sobre texto no numérico devuelve error, no crash
+    codigo = 'val x = num(input("val: "))\nprint(x)\n'
+    resultado = ejecutar_con_input(codigo, ["abc"])
+    assert any("Error" in r or "no se puede" in r.lower() for r in resultado)

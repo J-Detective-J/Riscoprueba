@@ -149,6 +149,7 @@ potencia
 
 // 10. Indexación y llamada a función (mayor precedencia que potencia)
 //     Maneja: expr[i]  y  expr[i][j]  encadenados
+//     La notación mat.funcion(args) se resuelve en llamada_funcion (dentro de primario)
 acceso
     : primario ('[' expresion ']')*   // indexación, posiblemente encadenada
     ;
@@ -182,7 +183,8 @@ lista
 
 
 llamada_funcion
-    : IDENTIFICADOR '(' lista_args? ')'
+    : IDENTIFICADOR '.' IDENTIFICADOR '(' lista_args? ')'   // módulo: mat.mul(A, B)
+    | IDENTIFICADOR '(' lista_args? ')'
     | LONG_F '(' lista_args? ')'      // built-in: long()
     | RANGE_F '(' lista_args? ')'     // built-in: range()
     | MAP_F '(' lista_args? ')'       // built-in: map()
@@ -190,6 +192,7 @@ llamada_funcion
     | REDUCE_F '(' lista_args? ')'    // built-in: reduce()
     | UNWRAP_F '(' lista_args? ')'    // built-in: unwrap()
     | FREE_F '(' lista_args? ')'      // built-in: free()
+    | INPUT_F '(' lista_args? ')'     // built-in: input()
     ;
 
 lista_args
@@ -242,6 +245,7 @@ FILTER_F     : 'filter';
 REDUCE_F     : 'reduce';
 UNWRAP_F     : 'unwrap';
 FREE_F       : 'free';
+INPUT_F      : 'input';
 
 // Casteos como tokens reservados
 NUM_CAST     : 'num';

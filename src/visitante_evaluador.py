@@ -217,7 +217,7 @@ class VisitanteEvaluador(RISCOVisitor):
             condicion = self.visit(ctx.expresion())
             if not isinstance(condicion, bool):
                 raise Exception(
-                    f"La condición del 'while' debe ser Bool, "
+                    f"Error de tipos: la condición del 'while' debe ser Bool, "
                     f"no '{type(condicion).__name__}'"
                 )
             if not condicion:
@@ -243,7 +243,7 @@ class VisitanteEvaluador(RISCOVisitor):
         condicion = self.visit(expresiones[0])
         if not isinstance(condicion, bool):
             raise Exception(
-                f"La condición del 'if' debe ser Bool, "
+                f"Error de tipos: la condición del 'if' debe ser Bool, "
                 f"no '{type(condicion).__name__}'"
             )
         if condicion:
@@ -467,7 +467,7 @@ class VisitanteEvaluador(RISCOVisitor):
         # Permitir comparación con null independientemente del tipo
         if izq is not None and der is not None and type(izq) != type(der):
             raise Exception(
-                f"'{op}' no puede comparar "
+                f"Error de tipos: '{op}' no puede comparar "
                 f"'{type(izq).__name__}' y '{type(der).__name__}'"
             )
         if op == '==':
@@ -737,8 +737,16 @@ class VisitanteEvaluador(RISCOVisitor):
             nombre = 'unwrap'
         elif ctx.FREE_F():
             nombre = 'free'
+        elif ctx.INPUT_F():
+            nombre = 'input'
         else:
-            nombre = ctx.IDENTIFICADOR().getText()
+            # Puede ser llamada simple nombre(args) o módulo.función(args)
+            identificadores = ctx.IDENTIFICADOR()
+            if len(identificadores) == 2:
+                # notación de módulo: mat.mul → "mat_mul"
+                nombre = identificadores[0].getText() + '_' + identificadores[1].getText()
+            else:
+                nombre = identificadores[0].getText()
         
         args_raw = []
         if ctx.lista_args():
@@ -784,6 +792,7 @@ class VisitanteEvaluador(RISCOVisitor):
             'reduce': self._builtin_reduce,
             'unwrap': self._builtin_unwrap,
             'free':   self._builtin_free,
+            'input':  self._builtin_input,
         }
         if nombre in dispatch:
             return dispatch[nombre](args)
@@ -944,18 +953,9 @@ class VisitanteEvaluador(RISCOVisitor):
 
         Libera explícitamente la variable x de la memoria del intérprete
         y solicita al recolector de basura de Python que libere la memoria.
-
-        En Python la recolección es automática, pero free() garantiza
-        que la variable desaparezca del scope del intérprete inmediatamente,
-        lo cual es útil tras matrices de entrenamiento grandes.
-
-        Ejemplo:
-            free(X_train)  // X_train ya no es accesible tras esta llamada
         """
         if len(args) != 1:
             raise Exception(f"free() requiere 1 argumento, recibió {len(args)}")
-        # Intentar eliminar la variable de la memoria si el argumento
-        # es el valor de alguna variable conocida (búsqueda por identidad)
         valor_a_liberar = args[0]
         nombres_a_borrar = [
             nombre for nombre, val in self.memoria.items()
@@ -966,6 +966,26 @@ class VisitanteEvaluador(RISCOVisitor):
                 del self.memoria[nombre]
         gc.collect()
         return None
+
+    def _builtin_input(self, args):
+        """
+        input(prompt) → Text
+
+        Muestra el prompt en consola y espera que el usuario escriba
+        una línea. Siempre devuelve Text — nunca falla.
+        Para obtener un número, convertir con num() o decimal() después.
+
+        Ejemplo:
+            val nombre = input("¿Cómo te llamas? ")
+            val edad   = num(input("¿Cuántos años tienes? "))
+        """
+        if len(args) > 1:
+            raise Exception(f"input() recibe 0 o 1 argumento, recibió {len(args)}")
+        prompt = str(args[0]) if args else ""
+        try:
+            return input(prompt)
+        except EOFError:
+            return ""
 
     def _aplicar_funcion(self, func, argumentos):
         """
