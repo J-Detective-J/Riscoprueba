@@ -210,7 +210,7 @@ end
 
 // ── 11. FUNCIONES CORTAS ─────────────────────────────────────
 // Prueba: declaracion_funcion de una sola línea
-// ¡IMPORTANTE: Estas funciones deben definerse ANTES de ser usadas!
+// ¡IMPORTANTE: Estas funciones deben definirse ANTES de ser usadas!
 
 print("=== 11. FUNCIONES CORTAS ===")
 
@@ -493,14 +493,14 @@ val n_vals = num(input("¿Cuántos valores quieres generar? (ej: 8): "))
 
 // ── 26.2 Generar vector pseudoaleatorio en [0.0, 100.0) ───────
 // mat_seed fija la semilla para reproducibilidad
-mat_seed(7)
+mat.seed(7)
 
 // mat_random genera una matriz 1×n; tomamos la primera fila
-val rnd_mat = mat_random(1, n_vals)
+val rnd_mat = mat.random(1, n_vals)
 val v_base  = rnd_mat[0]
 
 // Escalar a [0.0, 100.0)
-val v_esc = mat_scale(100.0, v_base)
+val v_esc = mat.scale(100.0, v_base)
 
 print("Vector generado (escala 0-100):")
 print(v_esc)
@@ -509,83 +509,83 @@ print(long(v_esc))
 
 // ── 26.3 Grupo 2 — Estadística ────────────────────────────────
 
-val v_suma   = mat_sum(v_esc)
-val v_media  = mat_mean(v_esc)
-val v_minimo = mat_min(v_esc)
-val v_maximo = mat_max(v_esc)
-val v_desv   = mat_std(v_esc)
+val v_suma   = mat.sum(v_esc)
+val v_media  = mat.mean(v_esc)
+val v_minimo = mat.min(v_esc)
+val v_maximo = mat.max(v_esc)
+val v_desv   = mat.std(v_esc)
 
-print("Suma:           ")
+print("Suma:")
 print(v_suma)
-print("Media:          ")
+print("Media:")
 print(v_media)
-print("Mínimo:         ")
+print("Mínimo:")
 print(v_minimo)
-print("Máximo:         ")
+print("Máximo:")
 print(v_maximo)
-print("Desviación std: ")
+print("Desviación std:")
 print(v_desv)
 
 // ── 26.4 Grupo 1 — Escalares sobre la media ───────────────────
 
 // mat_abs: valor absoluto (útil si la media fuera negativa)
-val v_abs_media = mat_abs(v_media)
-print("abs(media):     ")
+val v_abs_media = mat.abs(v_media)
+print("abs(media):")
 print(v_abs_media)
 
-// mat_floor y mat_ceil sobre la media
-val v_piso  = mat_floor(v_media)
-val v_techo = mat_ceil(v_media)
-print("floor(media):   ")
+// mat_floor y mat.ceil sobre la media
+val v_piso  = mat.floor(v_media)
+val v_techo = mat.ceil(v_media)
+print("floor(media):")
 print(v_piso)
-print("ceil(media):    ")
+print("ceil(media):")
 print(v_techo)
 
 // mat_pow: media al cuadrado
-val v_media2 = mat_pow(v_media, 2.0)
-print("media^2:        ")
+val v_media2 = mat.pow(v_media, 2.0)
+print("media^2:")
 print(v_media2)
 
 // mat_sqrt: raíz de la suma → devuelve Result, usar unwrap
-val v_raiz = unwrap(mat_sqrt(v_suma), 0.0)
-print("sqrt(suma):     ")
+val v_raiz = unwrap(mat.sqrt(v_suma), 0.0)
+print("sqrt(suma):")
 print(v_raiz)
 
 // mat_exp: e^(media/100) para mantener valor manejable
-val v_exp = mat_exp(v_media / 100.0)
-print("exp(media/100): ")
+val v_exp = mat.exp(v_media / 100.0)
+print("exp(media/100):")
 print(v_exp)
 
 // mat_log: logaritmo natural de la media (solo si media > 0)
-val v_log = unwrap(mat_log(v_media), 0.0)
-print("log(media):     ")
+val v_log = unwrap(mat.log(v_media), 0.0)
+print("log(media):")
 print(v_log)
 
 // ── 26.5 Grupo 3 — Operaciones vectoriales ────────────────────
 
 // mat_norm: norma euclidiana del vector
-val v_norma = mat_norm(v_esc)
+val v_norma = mat.norm(v_esc)
 print("Norma euclidiana:")
 print(v_norma)
 
 // mat_scale: normalizar a [0.0, 1.0)
-val v_norm01 = mat_scale(0.01, v_esc)
+val v_norm01 = mat.scale(0.01, v_esc)
 print("Vector normalizado [0,1):")
 print(v_norm01)
 
 // mat_vadd: sumar el vector consigo mismo
-val v_doble = mat_vadd(v_esc, v_esc)
+val v_doble = mat.vadd(v_esc, v_esc)
 print("Vector duplicado (vadd):")
 print(v_doble)
 
 // mat_dot: producto punto del vector normalizado consigo mismo
 // equivale a norma^2 / 10000
-val v_dot = mat_dot(v_norm01, v_norm01)
+val v_dot = mat.dot(v_norm01, v_norm01)
 print("dot(v_norm, v_norm):")
 print(v_dot)
 
 // Verificación: debe ser ≈ (norma/100)^2
-val v_verif = mat_pow(v_norma / 100.0, 2.0)
+val v_verif = mat.pow(v_norma / 100.0, 2.0)
 print("Verificación (norma/100)^2:")
 print(v_verif)
 
@@ -603,31 +603,31 @@ print("=== 27. OPERACIONES MATRICIALES CON MAT ===")
 
 print("--- 27.1 Generacion de matrices ---")
 
-val m_Z = mat_zeros(3, 4)
-print("mat_zeros(3,4):")
+val m_Z = mat.zeros(3, 4)
+print("mat.zeros(3,4):")
 print(m_Z)
 
-val m_U = mat_ones(2, 3)
-print("mat_ones(2,3):")
+val m_U = mat.ones(2, 3)
+print("mat.ones(2,3):")
 print(m_U)
 
-val m_I3 = mat_identity(3)
-print("mat_identity(3):")
+val m_I3 = mat.identity(3)
+print("mat.identity(3):")
 print(m_I3)
 
 val m_plana = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
-val m_M23   = mat_fromList(m_plana, 2, 3)
-print("mat_fromList([1..6], 2, 3):")
+val m_M23   = mat.fromList(m_plana, 2, 3)
+print("mat.fromList([1..6], 2, 3):")
 print(m_M23)
 
 // fromList con tamaño incorrecto → None
-val m_Merr = mat_fromList([1.0, 2.0], 2, 3)
-print("mat_fromList mal dimensionada (None):")
+val m_Merr = mat.fromList([1.0, 2.0], 2, 3)
+print("mat.fromList mal dimensionada (None):")
 print(m_Merr)
 
 mat_seed(42)
-val m_R = mat_random(3, 3)
-print("mat_random(3,3) semilla=42:")
+val m_R = mat.random(3, 3)
+print("mat.random(3,3) semilla=42:")
 print(m_R)
 
 // ── 27.2 Grupo 4 — Inspección de matrices ────────────────────
@@ -638,34 +638,34 @@ val m_A = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
 val m_B = [[7.0, 8.0, 9.0], [10.0, 11.0, 12.0]]
 
 // mat_shape
-val m_forma = mat_shape(m_A)
+val m_forma = mat.shape(m_A)
 print("shape(A) → [2, 3]:")
 print(m_forma)
 
 // mat_T: transpuesta de A → 3×2
-val m_AT = mat_T(m_A)
+val m_AT = mat.T(m_A)
 print("T(A):")
 print(m_AT)
 print("shape(T(A)) → [3, 2]:")
-print(mat_shape(m_AT))
+print(mat.shape(m_AT))
 
 // mat_get: elemento en fila 1, col 2 → 6.0
-val m_elem = mat_get(m_A, 1, 2)
+val m_elem = mat.get(m_A, 1, 2)
 print("get(A, 1, 2) = 6.0:")
 print(m_elem)
 
 // mat_get fuera de rango → None
-val m_elem_err = mat_get(m_A, 5, 0)
+val m_elem_err = mat.get(m_A, 5, 0)
 print("get(A, 5, 0) fuera de rango (None):")
 print(m_elem_err)
 
 // mat_row: fila 0 de A → [1, 2, 3]
-val m_fila0 = mat_row(m_A, 0)
+val m_fila0 = mat.row(m_A, 0)
 print("row(A, 0) = [1, 2, 3]:")
 print(m_fila0)
 
 // mat_col: columna 1 de A → [2, 5]
-val m_col1 = mat_col(m_A, 1)
+val m_col1 = mat.col(m_A, 1)
 print("col(A, 1) = [2, 5]:")
 print(m_col1)
 
@@ -674,29 +674,31 @@ print(m_col1)
 print("--- 27.3 Operaciones entre matrices ---")
 
 // mat_madd: A + B elemento a elemento
-val m_AB = mat_madd(m_A, m_B)
+val m_AB = mat.madd(m_A, m_B)
 print("madd(A, B):")
 print(m_AB)
 
 // mat_madd con forma distinta → None
 val m_C1    = [[1.0, 2.0], [3.0, 4.0]]
-val m_add_e = mat_madd(m_A, m_C1)
+val m_add_e = mat.madd(m_A, m_C1)
 print("madd(A, C1) forma distinta (None):")
 print(m_add_e)
 
 // mat_mscale: A * 2.0
-val m_A2 = mat_mscale(2.0, m_A)
+val m_A2 = mat.mscale(2.0, m_A)
 print("mscale(2.0, A):")
 print(m_A2)
 
 // mat_mul: A(2×3) × AT(3×2) → 2×2
-val m_C = mat_mul(m_A, m_AT)
+// prim_mat_matmul devuelve lista directa (no Result)
+val m_C = unwrap(mat.mul(m_A, m_AT),null)
 print("mul(A, T(A)) = A×AT [2×2]:")
 print(m_C)
 
-// mat_mul con dimensiones incompatibles → None
-val m_mul_e = mat_mul(m_A, m_C1)
-print("mul(A, B) incompatible (debe ser err)")
+// mat_mul con dimensiones incompatibles → error
+// m_A es 2×3, m_C1 es 2×2 → cols(A)=3 != filas(C1)=2 → None
+val m_mul_e = mat.mul(m_A, m_C1)
+print("mul(A, C1) incompatible (debe ser err):")
 print(m_mul_e)
 
 // ── 27.4 Grupo 6 — Operaciones optimizadas deep learning ─────
@@ -713,8 +715,10 @@ val m_W = [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
 // b: bias 3 neuronas
 val m_b = [0.01, 0.02, 0.03]
 
-// mat_mulAdd: X×W + b en un solo paso → devuelve lista directa
-val m_pre = unwrap(mat_mulAdd(m_X, m_W, m_b))
+// mat_mulAdd: X(2×2) × W(2×3) + b(3) → 2×3
+// prim_mat_matmulAdd devuelve lista directa (no Result)
+// unwrap recibe 2 argumentos: resultado y fallback
+val m_pre = unwrap(mat.mulAdd(m_X, m_W, m_b),null)
 print("mulAdd(X, W, b) = pre-activaciones [2×3]:")
 print(m_pre)
 
@@ -726,25 +730,26 @@ relu(v) =>
     return 0.0
 end
 
-val m_act = mat_apply(relu, m_pre)
+val m_act = mat.apply(relu, m_pre)
 print("apply(relu, pre):")
 print(m_act)
 
 // mat_mulT: A × A^T sin construir la transpuesta
-// A(2×3) × A^T(3×2) → 2×2
-// mulT(A, B) calcula A × B^T, cols(A) debe == cols(B)
-// Aquí mulT(A, A): A(2×3) × A^T → resultado 2×2
-val m_mulT = unwrap(mat_mulT(m_A, m_A))
+// A es 2×3; mulT(A, A) calcula A × A^T → 2×2
+// prim_mat_matmulT devuelve lista directa (no Result)
+val m_mulT = unwrap(mat.mulT(m_A, m_A), null)
 print("mulT(A, A) = A×A^T [2×2]:")
 print(m_mulT)
 
 // Verificación: debe coincidir con mat_mul(A, T(A))
-val m_verif = unwrap(mat_mul(m_A, mat_T(m_A)))
-print("Verificación mul(A, T(A)) [debe coincidir]:")
+// mat_mul devuelve lista directa (no Result)
+val m_verif = unwrap(mat.mul(m_A, mat_T(m_A)), null)
+print("Verificacion mul(A, T(A)) [debe coincidir]:")
 print(m_verif)
 
-// mat_mulAdd con dimensiones incorrectas → None
-val m_mulAdd_e = mat_mulAdd(m_X, m_A, m_b)
+// mat_mulAdd con dimensiones incorrectas → error
+// m_X es 2×2, m_I3 es 3×3 → cols(X)=2 != filas(I3)=3 → None
+val m_mulAdd_e = mat.mulAdd(m_X, m_I3, m_b)
 print("mulAdd dimensiones incorrectas (debe ser err):")
 print(m_mulAdd_e)
 
@@ -753,41 +758,41 @@ print(m_mulAdd_e)
 print("--- 27.5 Pipeline completo ---")
 
 mat_seed(99)
-val m_M44 = mat_random(4, 4)
+val m_M44 = mat.random(4, 4)
 print("Matriz 4×4 aleatoria (semilla 99):")
 print(m_M44)
 
 // Escalar a [-1.0, 1.0): x*2 - 1
-val m_M44c   = mat_mscale(2.0, m_M44)
-val m_unos44 = mat_ones(4, 4)
-val m_M44n   = mat_madd(m_M44c, mat_mscale(-1.0, m_unos44))
+val m_M44c   = mat.mscale(2.0, m_M44)
+val m_unos44 = mat.ones(4, 4)
+val m_M44n   = mat.madd(m_M44c, mat.mscale(-1.0, m_unos44))
 print("Matriz centrada en [-1, 1):")
 print(m_M44n)
 
 // Aplicar sigmoid: 1 / (1 + e^(-x))
-sigmoid(v) => 1.0 / (1.0 + mat_exp(0.0 - v))
+sigmoid(v) => 1.0 / (1.0 + mat.exp(0.0 - v))
 
-val m_M44s = mat_apply(sigmoid, m_M44n)
+val m_M44s = mat.apply(sigmoid, m_M44n)
 print("Tras aplicar sigmoid:")
 print(m_M44s)
 
 // Extraer fila 0 y calcular su norma
-val m_f0    = mat_row(m_M44s, 0)
-val m_norma = mat_norm(m_f0)
+val m_f0    = mat.row(m_M44s, 0)
+val m_norma = mat.norm(m_f0)
 print("Fila 0 tras sigmoid:")
 print(m_f0)
 print("Norma fila 0:")
 print(m_norma)
 
 // Suma por fila usando mat_sum + mat_row
-val m_sf0 = mat_sum(mat_row(m_M44s, 0))
-val m_sf1 = mat_sum(mat_row(m_M44s, 1))
-val m_sf2 = mat_sum(mat_row(m_M44s, 2))
-val m_sf3 = mat_sum(mat_row(m_M44s, 3))
+val m_sf0 = mat.sum(mat.row(m_M44s, 0))
+val m_sf1 = mat.sum(mat.row(m_M44s, 1))
+val m_sf2 = mat.sum(mat.row(m_M44s, 2))
+val m_sf3 = mat.sum(mat.row(m_M44s, 3))
 val m_sumas = [m_sf0, m_sf1, m_sf2, m_sf3]
 print("Suma por fila:")
 print(m_sumas)
 print("Media de sumas:")
-print(mat_mean(m_sumas))
+print(mat.mean(m_sumas))
 
 print("=== FIN DE PRUEBAS ===")
