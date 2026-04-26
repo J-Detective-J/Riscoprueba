@@ -309,10 +309,10 @@ mat_mulAdd(A, W, b) => prim_mat_matmulAdd(A, W, b)
 //    Reducción por cuadrantes con identidades exactas.
 //
 //  NOTA: todas las funciones trabajan en RADIANES.
-//  Conversión: rad = grados * MAT_PI / 180.0
+//  Conversión: rad = grados * PI / 180.0
 
 // Constantes trigonométricas
-val MAT_PI   = 3.141592653589793
+val PI   = 3.141592653589793
 val MAT_2PI  = 6.283185307179586
 val MAT_PI2  = 1.5707963267948966
 val MAT_PI4  = 0.7853981633974483
@@ -373,33 +373,33 @@ prim_mat_cos_q1(r) =>
 end
 
 /// mat.sin(x) → Decimal   (x en RADIANES)
-/// Para grados usar: mat_sin(grados * MAT_PI / 180.0)
+/// Para grados usar: mat_sin(grados * PI / 180.0)
 mat_sin(x) =>
     val r = prim_mat_mod2pi(x)
     if r < MAT_PI2:
         return prim_mat_sin_q1(r)
     end
-    if r < MAT_PI:
-        return prim_mat_sin_q1(MAT_PI - r)
+    if r < PI:
+        return prim_mat_sin_q1(PI - r)
     end
-    if r < MAT_PI + MAT_PI2:
-        return 0.0 - prim_mat_sin_q1(r - MAT_PI)
+    if r < PI + MAT_PI2:
+        return 0.0 - prim_mat_sin_q1(r - PI)
     end
     return 0.0 - prim_mat_sin_q1(MAT_2PI - r)
 end
 
 /// mat.cos(x) → Decimal   (x en RADIANES)
-/// Para grados usar: mat_cos(grados * MAT_PI / 180.0)
+/// Para grados usar: mat_cos(grados * PI / 180.0)
 mat_cos(x) =>
     val r = prim_mat_mod2pi(x)
     if r < MAT_PI2:
         return prim_mat_cos_q1(r)
     end
-    if r < MAT_PI:
-        return 0.0 - prim_mat_cos_q1(MAT_PI - r)
+    if r < PI:
+        return 0.0 - prim_mat_cos_q1(PI - r)
     end
-    if r < MAT_PI + MAT_PI2:
-        return 0.0 - prim_mat_cos_q1(r - MAT_PI)
+    if r < PI + MAT_PI2:
+        return 0.0 - prim_mat_cos_q1(r - PI)
     end
     return prim_mat_cos_q1(MAT_2PI - r)
 end
