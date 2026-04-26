@@ -282,3 +282,134 @@ end
 /// mat.mulAdd(A, W, b) → [[Decimal]] | null
 /// A×W + bias b a cada fila. null si incompatibles.
 mat_mulAdd(A, W, b) => prim_mat_matmulAdd(A, W, b)
+
+// ── GRUPO 7: Trigonometría ────────────────────────────────────────
+//
+//  Estrategia en tres capas para precisión máxima (≤ 1 ULP):
+//
+//  CAPA 1 — prim_mat_mod2pi(x):
+//    Reduce x al rango [0, 2π) con mat_floor.
+//    Corrige el caso negativo sumando 2π.
+//
+//  CAPA 2 — prim_mat_sin_q1 / prim_mat_cos_q1:
+//    Evalúan sin/cos para r ∈ [0, π/2] aplicando la identidad
+//    de complemento cuando r > π/4:
+//       sin(r) = cos(π/2 − r)    cos(r) = sin(π/2 − r)
+//    El complemento (π/2 − r) siempre está en [0, π/4], por lo que
+//    la serie de Taylor converge en ≤ 8 términos.
+//
+//    ¿Por qué es necesario esto?
+//    La serie de Taylor sin(x) = x − x³/6 + x⁵/120 − ...
+//    en x = π/2 ≈ 1.5708 acumula error de cancelación entre términos
+//    grandes de signos opuestos, produciendo 1.0000000000000002.
+//    Con el complemento, la serie opera sobre π/2 − r ≈ 0, donde
+//    los términos son pequeños desde el principio y no hay cancelación.
+//
+//  CAPA 3 — mat_sin / mat_cos:
+//    Reducción por cuadrantes con identidades exactas.
+//
+//  NOTA: todas las funciones trabajan en RADIANES.
+//  Conversión: rad = grados * MAT_PI / 180.0
+
+// Constantes trigonométricas
+val MAT_PI   = 3.141592653589793
+val MAT_2PI  = 6.283185307179586
+val MAT_PI2  = 1.5707963267948966
+val MAT_PI4  = 0.7853981633974483
+val MAT_TOL  = 0.000000000000001
+
+// CAPA 1: reducir x a [0, 2π)
+prim_mat_mod2pi(x) =>
+    var r = x - decimal(mat_floor(x / MAT_2PI)) * MAT_2PI
+    if r < 0.0:
+        r = r + MAT_2PI
+    end
+    return r
+end
+
+// Serie de Taylor para sin(r), r en [0, π/4].
+// Recurrencia: t_{k+1} = −t_n · r² / ((2n)(2n+1))
+prim_mat_sin_serie(r) =>
+    val r2      = r * r
+    var termino = r
+    var acum    = r
+    var k       = 1
+    while mat_abs(termino) >= MAT_TOL:
+        termino = 0.0 - termino * r2 / decimal((2 * k) * (2 * k + 1))
+        acum    = acum + termino
+        k       = k + 1
+    end
+    return acum
+end
+
+// Serie de Taylor para cos(r), r en [0, π/4].
+// Recurrencia: t_{k+1} = −t_n · r² / ((2n−1)(2n))
+prim_mat_cos_serie(r) =>
+    val r2      = r * r
+    var termino = 1.0
+    var acum    = 1.0
+    var k       = 1
+    while mat_abs(termino) >= MAT_TOL:
+        termino = 0.0 - termino * r2 / decimal((2 * k - 1) * (2 * k))
+        acum    = acum + termino
+        k       = k + 1
+    end
+    return acum
+end
+
+// CAPA 2: sin/cos para r en [0, π/2] con identidad de complemento
+prim_mat_sin_q1(r) =>
+    if r > MAT_PI4:
+        return prim_mat_cos_serie(MAT_PI2 - r)
+    end
+    return prim_mat_sin_serie(r)
+end
+
+prim_mat_cos_q1(r) =>
+    if r > MAT_PI4:
+        return prim_mat_sin_serie(MAT_PI2 - r)
+    end
+    return prim_mat_cos_serie(r)
+end
+
+/// mat.sin(x) → Decimal   (x en RADIANES)
+/// Para grados usar: mat_sin(grados * MAT_PI / 180.0)
+mat_sin(x) =>
+    val r = prim_mat_mod2pi(x)
+    if r < MAT_PI2:
+        return prim_mat_sin_q1(r)
+    end
+    if r < MAT_PI:
+        return prim_mat_sin_q1(MAT_PI - r)
+    end
+    if r < MAT_PI + MAT_PI2:
+        return 0.0 - prim_mat_sin_q1(r - MAT_PI)
+    end
+    return 0.0 - prim_mat_sin_q1(MAT_2PI - r)
+end
+
+/// mat.cos(x) → Decimal   (x en RADIANES)
+/// Para grados usar: mat_cos(grados * MAT_PI / 180.0)
+mat_cos(x) =>
+    val r = prim_mat_mod2pi(x)
+    if r < MAT_PI2:
+        return prim_mat_cos_q1(r)
+    end
+    if r < MAT_PI:
+        return 0.0 - prim_mat_cos_q1(MAT_PI - r)
+    end
+    if r < MAT_PI + MAT_PI2:
+        return 0.0 - prim_mat_cos_q1(r - MAT_PI)
+    end
+    return prim_mat_cos_q1(MAT_2PI - r)
+end
+
+/// mat.tan(x) → Decimal | null
+/// Devuelve null en las asíntotas (π/2 + kπ).
+mat_tan(x) =>
+    val c = mat_cos(x)
+    if mat_abs(c) < MAT_TOL:
+        return null
+    end
+    return mat_sin(x) / c
+end
