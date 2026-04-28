@@ -122,8 +122,8 @@ end
 /// mat.norm(v) → Decimal
 /// Norma euclidiana. Usa unwrap porque sqrt devuelve Result.
 mat_norm(v) =>
-    val sc = reduce(v, (acc, x) => acc + x ^ 2)
-    return unwrap(mat_sqrt(sc), 0.0)
+    val sc = map(v, (x) => x ^ 2)
+    return unwrap(mat_sqrt(mat_sum(sc)), 0.0)
 end
 
 

@@ -1,0 +1,65 @@
+factorial(x)=>
+if x==0:
+return 1
+end
+return x*factorial(x-1)
+end
+
+fibonacci(m)=>
+if m ==0:
+return 0
+end
+if m == 1:
+return 1
+end
+return fibonacci(m-1)+fibonacci(m-2)
+end
+
+lista_temp(lista)=>
+var listaT=[]
+for i in range(1,long(lista)):
+listaT=listaT+[lista[i]]
+end
+return listaT
+end
+
+sumar_lista(lista)=>
+if long(lista)==0:
+return 0
+end
+return lista[0]+sumar_lista(lista_temp(lista))
+end
+
+contar_mayores(lista,n)=>
+if long(lista)==0:
+return 0
+end
+var mayor =0
+if lista[0]>n:
+mayor=1
+end
+return mayor + contar_mayores(lista_temp(lista),n)
+end
+
+normalizar(v)=>
+val norma=mat.norm(v)
+if norma==0.0:
+return null
+end
+return map(v,(x)=>x/norma)
+end
+
+print("Factorial de 5: "+texto(factorial(5)))
+print("Fibonacci 5: "+texto(fibonacci(5)))
+print(sumar_lista([1, 2, 3, 4, 5]))   // 15
+print(sumar_lista([]))                  // 0
+print(sumar_lista([10]))               // 10
+print(contar_mayores([1, 5, 3, 8, 2, 7], 4))   // 3  (5, 8, 7)
+print(contar_mayores([1, 2, 3], 10))             // 0
+print(contar_mayores([], 5))                     // 0
+
+val v = [3.0, 4.0]
+print(normalizar(v))   // [0.6, 0.8]  (norma = 5)
+
+val cero = [0.0, 0.0]
+print(normalizar(cero))   // None
