@@ -49,7 +49,7 @@ end
 return map(v,(x)=>x/norma)
 end
 
-print("Factorial de 5: "+texto(factorial(5)))
+print("Factorial de 229: "+texto(factorial(229)))
 print("Fibonacci 5: "+texto(fibonacci(5)))
 print(sumar_lista([1, 2, 3, 4, 5]))   // 15
 print(sumar_lista([]))                  // 0

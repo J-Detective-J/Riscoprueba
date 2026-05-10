@@ -1007,3 +1007,55 @@ def test_visual_hist_genera_svg():
     assert "<rect" in resultado[1]
     assert "Hist" in resultado[1]
     assert resultado[2] == "True"
+
+def test_memory_info_funciona():
+    codigo = (
+        'val x = 10\n'
+        'print(memory_info())\n'
+    )
+    resultado = ejecutar(codigo)
+    assert "variables=" in resultado[0]
+    assert "recursion=" in resultado[0]
+
+
+def test_memory_free_libera_variable_mutable():
+    codigo = (
+        'var xs = [1,2,3]\n'
+        'print(memory_info())\n'
+        'memory_free("xs")\n'
+        'print(memory_info())\n'
+    )
+
+    resultado = ejecutar(codigo)
+
+    assert "listas=1" in resultado[0]
+    assert "celdas=3" in resultado[0]
+
+    assert "listas=0" in resultado[1]
+    assert "celdas=0" in resultado[1]
+def test_memory_free_no_libera_val():
+    codigo = (
+        'val xs = [1,2,3]\n'
+        'memory_free("xs")\n'
+    )
+
+    resultado = ejecutar(codigo)
+
+    assert any("variables val" in r for r in resultado)
+
+
+def test_factorial_iterativo_20():
+    codigo = (
+        'fact(n) =>\n'
+        '    var acc = 1\n'
+        '    var i = 1\n'
+        '    while i <= n:\n'
+        '        acc = acc * i\n'
+        '        i = i + 1\n'
+        '    end\n'
+        '    return acc\n'
+        'end\n'
+        'print(fact(20))\n'
+    )
+    resultado = ejecutar(codigo)
+    assert resultado[0] == "2432902008176640000"

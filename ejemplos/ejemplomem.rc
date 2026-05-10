@@ -1,0 +1,11 @@
+print(memory_info())
+
+var A = mat_random(100, 100)
+var B = mat_random(100, 100)
+
+val C = unwrap(mat_mul(A, B), [])
+print(memory_info())
+memory_free("A")
+memory_free("B")
+
+print(memory_info())

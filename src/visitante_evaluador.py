@@ -10,11 +10,13 @@ bucles, llamadas a función, built-ins, casteo e indexación.
 """
 
 import gc
+import sys
 from antlr4 import *
 from gramaticas.RISCOParser import RISCOParser
 from gramaticas.RISCOVisitor import RISCOVisitor
+from src.memoria import GestorMemoria
 
-
+sys.setrecursionlimit(10000)
 # ──────────────────────────────────────────────────────────────
 #  Excepción de control para implementar 'return'
 # ──────────────────────────────────────────────────────────────
@@ -235,6 +237,8 @@ def _prim_matmul(A, B):
     fB = len(B);  cB = len(B[0])
     if cA != fB:
         return None          # RISCO lo convierte en Err(...)
+    if fA * cB > 1_000_000:
+        return None
     C = [[0.0] * cB for _ in range(fA)]
     for i in range(fA):
         for k in range(cA):
@@ -268,6 +272,8 @@ def _prim_matmulT(A, B):
     fB = len(B)
     if cA != len(B[0]):
         return None
+    if fA * fB > 1_000_000:
+        return None
     C = [[0.0] * fB for _ in range(fA)]
     for i in range(fA):
         for j in range(fB):
@@ -300,6 +306,8 @@ def _prim_matmulAdd(A, W, b):
     fA = len(A);  cA = len(A[0])
     fW = len(W);  cW = len(W[0])
     if cA != fW:
+        return None
+    if fA * cW > 1_000_000:
         return None
     C = [[0.0] * cW for _ in range(fA)]
     for i in range(fA):
@@ -391,6 +399,7 @@ class VisitanteEvaluador(RISCOVisitor):
         self.vals             = set()
         self.ultimo_resultado = None
         self.modo_interactivo = modo_interactivo
+        self.gestor_memoria   = GestorMemoria()
 
     # ══════════════════════════════════════════════════════════
     #  PROGRAMA
@@ -432,6 +441,9 @@ class VisitanteEvaluador(RISCOVisitor):
         if nombre in self.memoria:
             raise Exception(f"'{nombre}' ya está definida y no puede redeclararse")
         self.memoria[nombre] = valor
+        self.gestor_memoria.validar_num_variables(self.memoria)
+        if isinstance(valor, list):
+            self.gestor_memoria.validar_lista(valor, nombre)
         if ctx.VAL() is not None:
             self.vals.add(nombre)
         return None
@@ -450,6 +462,8 @@ class VisitanteEvaluador(RISCOVisitor):
         if nombre in self.vals:
             raise Exception(f"'{nombre}' es inmutable (val), no se puede reasignar")
         self.memoria[nombre] = valor
+        if isinstance(valor, list):
+            self.gestor_memoria.validar_lista(valor, nombre)
         return valor
 
     def visitExpresion_stmt(self, ctx: RISCOParser.Expresion_stmtContext):
@@ -632,49 +646,54 @@ class VisitanteEvaluador(RISCOVisitor):
 
     def _llamar_funcion(self, funcion, argumentos):
         """
-        Ejecuta el cuerpo de una FuncionRISCO con los argumentos dados.
+        Ejecuta una función RISCO con control de memoria.
 
-        Crea un entorno local combinando el closure con los parámetros
-        reales. Restaura la memoria global al terminar.
-
-        Args:
-            funcion (FuncionRISCO): La función a ejecutar.
-            argumentos (list): Lista de valores para los parámetros.
-
-        Returns:
-            El valor devuelto por la función (último resultado o return).
-
-        Raises:
-            Exception: Si el número de argumentos no coincide.
+        Mejora:
+        - controla profundidad recursiva
+        - crea entorno local controlado
+        - restaura memoria siempre
+        - limpia entorno local al finalizar
         """
+
         if len(argumentos) != len(funcion.params):
             raise Exception(
                 f"Se esperaban {len(funcion.params)} argumentos, "
                 f"se recibieron {len(argumentos)}"
             )
-        # Guardar memoria global y crear entorno local
+
+        self.gestor_memoria.entrar_funcion()
+
         memoria_anterior = self.memoria
-        entorno_local    = dict(funcion.closure)
+        entorno_local = dict(funcion.closure)
+
         for nombre, valor in zip(funcion.params, argumentos):
             entorno_local[nombre] = valor
+
         self.memoria = entorno_local
 
         resultado = None
+
         try:
             if funcion.cuerpo_expr is not None:
-                # Forma corta: evaluar la expresión directamente
                 resultado = self.visit(funcion.cuerpo_expr)
             else:
-                # Forma larga: ejecutar sentencias hasta el final o return
                 for sentencia in funcion.cuerpo_stmts:
                     self.visit(sentencia)
+
         except _ReturnException as ret:
             resultado = ret.valor
+        except RecursionError:
+            raise Exception(
+                "Límite interno de recursión alcanzado. "
+                "El programa requiere demasiadas llamadas anidadas."
+            )
+
         finally:
             self.memoria = memoria_anterior
+            entorno_local.clear()
+            self.gestor_memoria.salir_funcion()
 
         return resultado
-
     # ══════════════════════════════════════════════════════════
     #  EXPRESIONES
     # ══════════════════════════════════════════════════════════
@@ -1073,7 +1092,10 @@ class VisitanteEvaluador(RISCOVisitor):
             'prim_file_readLine': self._builtin_file_readLine,
             'prim_file_write':    self._builtin_file_write,
             'prim_file_exists':   self._builtin_file_exists,
-            'prim_file_delete':   self._builtin_file_delete
+            'prim_file_delete':   self._builtin_file_delete,
+            'mem_info':           self._builtin_mem_info,
+            'memory_info': self._builtin_memory_info,
+            'memory_free': self._builtin_memory_free,
         }
         if nombre in dispatch:
             return dispatch[nombre](args)
@@ -1081,6 +1103,19 @@ class VisitanteEvaluador(RISCOVisitor):
 
     # ── Built-ins base ────────────────────────────────────────
 
+    def _builtin_mem_info(self, args):
+        """
+        mem_info() → Text
+
+        Devuelve información básica del estado de memoria del intérprete.
+        """
+        if len(args) != 0:
+            raise Exception(f"mem_info() no recibe argumentos, recibió {len(args)}")
+
+        return (
+            "variables=" + str(len(self.memoria)) +
+            ", recursion=" + str(self.gestor_memoria.profundidad_recursion)
+        )
     def _builtin_long(self, args):
         """
         long(lista) → Num
@@ -1232,20 +1267,18 @@ class VisitanteEvaluador(RISCOVisitor):
         """
         free(x) → null
 
-        Libera explícitamente la variable x de la memoria del intérprete
-        y solicita al recolector de basura de Python que libere la memoria.
+        Libera referencias al objeto dentro de la memoria del intérprete
+        y solicita recolección de basura.
         """
         if len(args) != 1:
             raise Exception(f"free() requiere 1 argumento, recibió {len(args)}")
-        valor_a_liberar = args[0]
-        nombres_a_borrar = [
-            nombre for nombre, val in self.memoria.items()
-            if val is valor_a_liberar
-        ]
-        for nombre in nombres_a_borrar:
-            if nombre not in self.vals:
-                del self.memoria[nombre]
-        gc.collect()
+
+        valor = args[0]
+        self.gestor_memoria.liberar_referencias(
+            self.memoria,
+            self.vals,
+            valor
+        )
         return None
 
     def _builtin_input(self, args):
@@ -1363,6 +1396,8 @@ class VisitanteEvaluador(RISCOVisitor):
         A, B = args
         if not isinstance(A, list) or not isinstance(B, list):
             raise Exception("mat.mul() requiere dos matrices ([[Decimal]])")
+        self.gestor_memoria.validar_matriz(A, "A")
+        self.gestor_memoria.validar_matriz(B, "B")
         resultado = _prim_matmul(A, B)
         if resultado is None:
             cA = len(A[0]) if A and A[0] else 0
@@ -1384,6 +1419,8 @@ class VisitanteEvaluador(RISCOVisitor):
         A, B = args
         if not isinstance(A, list) or not isinstance(B, list):
             raise Exception("mat.mulT() requiere dos matrices ([[Decimal]])")
+        self.gestor_memoria.validar_matriz(A, "A")
+        self.gestor_memoria.validar_matriz(B, "B")
         resultado = _prim_matmulT(A, B)
         if resultado is None:
             return ("err", "mat.mulT: columnas(A) != columnas(B)")
@@ -1406,6 +1443,9 @@ class VisitanteEvaluador(RISCOVisitor):
         A, W, b = args
         if not isinstance(A, list) or not isinstance(W, list) or not isinstance(b, list):
             raise Exception("mat.mulAdd() requiere dos matrices y un vector")
+        self.gestor_memoria.validar_matriz(A, "A")
+        self.gestor_memoria.validar_matriz(W, "W")
+        self.gestor_memoria.validar_matriz(b, "b")
         resultado = _prim_matmulAdd(A, W, b)
         if resultado is None:
             return ("err", "mat.mulAdd: dimensiones incompatibles")
@@ -1640,3 +1680,72 @@ class VisitanteEvaluador(RISCOVisitor):
         if isinstance(valor, float):
             return str(valor)
         return str(valor)
+    def _contar_celdas_risco(self, valor):
+        if not isinstance(valor, list):
+            return 0
+        total = 0
+        for elem in valor:
+            if isinstance(elem, list):
+                total += self._contar_celdas_risco(elem)
+            else:
+                total += 1
+        return total
+
+
+    def _es_matriz_risco(self, valor):
+        if not isinstance(valor, list) or len(valor) == 0:
+            return False
+        if not isinstance(valor[0], list):
+            return False
+
+        columnas = len(valor[0])
+        for fila in valor:
+            if not isinstance(fila, list):
+                return False
+            if len(fila) != columnas:
+                return False
+
+        return True
+
+
+    def _builtin_memory_info(self, args):
+        if len(args) != 0:
+            raise Exception("memory_info() no recibe argumentos")
+
+        variables = len(self.memoria)
+        listas = 0
+        matrices = 0
+        celdas = 0
+
+        for valor in self.memoria.values():
+            if isinstance(valor, list):
+                listas += 1
+                celdas += self._contar_celdas_risco(valor)
+                if self._es_matriz_risco(valor):
+                    matrices += 1
+
+        return (
+            "variables=" + str(variables) +
+            ", listas=" + str(listas) +
+            ", matrices=" + str(matrices) +
+            ", celdas=" + str(celdas) +
+            ", recursion=" + str(self.gestor_memoria.profundidad_recursion)
+        )
+
+
+    def _builtin_memory_free(self, args):
+        if len(args) != 1:
+            raise Exception("memory_free() requiere 1 argumento")
+
+        nombre = args[0]
+
+        if not isinstance(nombre, str):
+            raise Exception("memory_free() requiere el nombre de la variable como texto")
+
+        if nombre in self.vals:
+            raise Exception("memory_free() no puede liberar variables val")
+
+        if nombre in self.memoria:
+            del self.memoria[nombre]
+
+        return None

@@ -30,6 +30,7 @@ from antlr4 import *
 from gramaticas.RISCOLexer import RISCOLexer
 from gramaticas.RISCOParser import RISCOParser
 from src.visitante_evaluador import VisitanteEvaluador
+from src.manejador_errores import ManejadorErrores
 
 
 class RISCO:
@@ -116,9 +117,18 @@ class RISCO:
             codigo += '\n'
 
         entrada = InputStream(codigo)
+
+        manejador = ManejadorErrores()
+
         lexer = RISCOLexer(entrada)
+        lexer.removeErrorListeners()
+        lexer.addErrorListener(manejador)
+
         tokens = CommonTokenStream(lexer)
+
         parser = RISCOParser(tokens)
+        parser.removeErrorListeners()
+        parser.addErrorListener(manejador)
 
         try:
             arbol = parser.programa()
@@ -126,11 +136,15 @@ class RISCO:
             print(f"Error durante el parseo: {e}")
             return
 
+        if manejador.tiene_error:
+            print("Error: el programa contiene errores sintácticos. No se ejecutará.")
+            return
+
         try:
             self.visitante.visit(arbol)
         except Exception as e:
             print(f"Error en evaluación: {e}")
-
+            
     def modo_interactivo(self) -> None:
         """
         Inicia el modo REPL (Read-Eval-Print Loop) interactivo.
